@@ -9,7 +9,8 @@ ifndef TOP_CORE_NAME
 endif
 $(info TOP_CORE_NAME is $(TOP_CORE_NAME))
 
-TOP_CORE_NAME_DIR := $(subst :, _, ${TOP_CORE_NAME})
+TOP_CORE_NAME_DIR := $(subst :,_,$(TOP_CORE_NAME))
+$(info TOP_CORE_NAME_DIR is $(TOP_CORE_NAME_DIR))
 
 # Determine the directory of this Makefile
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
