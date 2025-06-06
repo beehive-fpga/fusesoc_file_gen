@@ -21,5 +21,5 @@ THIS_DIR := $(dir $(THIS_MAKEFILE))
 gen_filelist:
 	fusesoc --config=$(PWD)/fusesoc.conf run --setup --target=sim --no-export $(TOP_CORE_NAME)
 	python3 $(THIS_DIR)/generate_filelist.py --target=flist \
-		--edam_file=$(PWD)/build/$(TOP_CORE_NAME_DIR)_0.1/sim-modelsim/$(TOP_CORE_NAME_DIR)_0.1.eda.yml \
+		--edam_file=$(PWD)/build/$(TOP_CORE_NAME_DIR)/sim-modelsim/$(TOP_CORE_NAME_DIR).eda.yml \
 		--output_file=$(FLIST_NAME)

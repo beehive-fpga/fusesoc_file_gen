@@ -19,11 +19,11 @@ class File():
                 f"is_include_file: {self.is_include_file}\n")
 
 def main():
-    if "BEEHIVE_PROJECT_ROOT" not in os.environ:
-        raise RuntimeError("BEEHIVE_PROJECT_ROOT env variable not set")
-
     parser = setup_parser()
     args = parser.parse_args()
+
+    if args.target == "corundum_fpga" and not args.project_root:
+        parser.error("The --project_root argument when using the corundum_fpga target")
 
     files_list = []
     inc_files_list = []
@@ -39,7 +39,8 @@ def main():
                 files_list.append(new_file)
 
     if args.target == "corundum_fpga":
-        gen_corundum_fpga_filelist(files_list, inc_files_list, args.output_file)
+        project_root = str(Path(args.project_root).resolve())
+        gen_corundum_fpga_filelist(files_list, inc_files_list, args.output_file, project_root)
     elif args.target == "cocotb_sim":
         gen_cocotb_filelist(files_list, inc_files_list, args.output_file)
     elif args.target == "flist":
@@ -49,20 +50,19 @@ def main():
         raise RuntimeError(("I have no idea how we got here. Things are very"
                 "messed up"))
 
-def gen_corundum_fpga_filelist(files_list, inc_files_list, output_file):
+def gen_corundum_fpga_filelist(files_list, inc_files_list, output_file, project_root):
     # find Beehive's root
-    beehive_root = os.environ["BEEHIVE_PROJECT_ROOT"]
     with open(output_file, "w") as out_file:
         # Collect all the files
         for file in inc_files_list:
             relpath_str = (PurePath(file.name).relative_to(
-                Path(beehive_root).resolve()))
-            out_file.write((f"SYN_FILES += $(addprefix $(BEEHIVE_ROOT),"
+                Path(project_root).resolve()))
+            out_file.write((f"SYN_FILES += $(addprefix {project_root},"
                     f"{relpath_str})\n"))
         for file in files_list:
             relpath_str = (PurePath(file.name).relative_to(
-                Path(beehive_root).resolve()))
-            out_file.write((f"SYN_FILES += $(addprefix $(BEEHIVE_ROOT),"
+                Path(project_root).resolve()))
+            out_file.write((f"SYN_FILES += $(addprefix {project_root},"
                     f"{relpath_str})\n"))
 
         out_file.write("\n")
@@ -70,13 +70,11 @@ def gen_corundum_fpga_filelist(files_list, inc_files_list, output_file):
         # Collect all the include files
         for file in inc_files_list:
             relpath_str = (PurePath(file.name).relative_to(
-                Path(beehive_root).resolve()))
-            out_file.write((f"INC_FILES += $(addprefix $(BEEHIVE_ROOT),"
+                Path(project_root).resolve()))
+            out_file.write((f"INC_FILES += $(addprefix {project_root},"
                 f"{relpath_str})\n"))
 
 def gen_cocotb_filelist(files_list, inc_files_list, output_file):
-    # find Beehive's root
-    beehive_root = os.environ["BEEHIVE_PROJECT_ROOT"]
 
     incdirs = set()
     for file in inc_files_list:
@@ -123,6 +121,10 @@ def setup_parser():
     parser.add_argument("--output_file",
                         required=True,
                         help=("where to write the Verilog filelist to"))
+    parser.add_argument("--project_root",
+                        required=False,
+                        help=("the root of the project, required if using corundum_fpga target"))
+    
 #    parser.add_argument("--output_file",
 #                        required=False,
 #                        help=("where to write the VHDL filelist to"))
