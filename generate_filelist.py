@@ -2,6 +2,7 @@ import argparse
 import os, sys
 from pathlib import Path, PurePath
 import yaml
+import logging
 
 class File():
     def __init__(self, attributes):
